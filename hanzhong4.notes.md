@@ -75,62 +75,62 @@ Not keywords
 	/usr/include/linux/stddef.h
 
 ### Prime Number 求素数
-in: 100
-out: 25 97
+	in: 100
+	out: 25 97
 
-in: 1000
-out: 168 997
+	in: 1000
+	out: 168 997
 
-in: 10000
-out: 1229 9973
+	in: 10000
+	out: 1229 9973
 
-in: 100000
-out: 9592 99991
+	in: 100000
+	out: 9592 99991
 
-in: 1000000
-out: 78498 999983
-
-
-main() 
-{
+	in: 1000000
+	out: 78498 999983
 
 
-
-}
-
-int a = 0;
-int a=0;
-
-for (i = 0; i < 100; i++)
-for(i=0;i<100;i++)
-
-for ()
-{
-	for () 
+	main() 
 	{
-		if () {
 
-		}
 
-		if ()
-		{
-
-		}
 
 	}
-}	
+
+	int a = 0;
+	int a=0;
+
+	for (i = 0; i < 100; i++)
+	for(i=0;i<100;i++)
+
+	for ()
+	{
+		for () 
+		{
+			if () {
+
+			}
+
+			if ()
+			{
+
+			}
+
+		}
+	}	
 
 
-:%s/printf/debug/gc
+	:%s/printf/debug/gc
 
-#define printf 	//
-#define debug 	printf
+	#define printf 	//
+	#define debug 	printf
 
-#define debug(fmt, args...)		fprintf(stderr, fmt, ##args)
+	#define debug(fmt, args...)		fprintf(stderr, fmt, ##args)
 
 
-./a.out 2>/dev/null
-./a.out 2>log
+	./a.out 2>/dev/null
+	./a.out 2>log
 
 
 ## day2 (4.25 - 7hours) Basic 4 api

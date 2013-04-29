@@ -585,6 +585,7 @@ API function name Refer to
 fd_array[1] -> (stdout) <-|
 fd_array[3] -> ("log.c")  |
  	[4] ---------------
+
 4 fd = dup(1); -> stdout
 4 fd = dup(3); -> log.c
 
