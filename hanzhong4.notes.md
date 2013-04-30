@@ -591,9 +591,22 @@ fd_array[3] -> ("log.c")  |
 
 4 fd = dup2(1, 4);
 
+## day6 (4.30 - 10hours) Process
+### 3.1 进程控制块
 
+	struct task_struct {
+		pid_t pid;	
+		
+		struct mm_struct *mm,
 
+		/* open file information */
+		struct files_struct *files;
 
+		/* signal handlers */
+		struct signal_struct *signal;
+		struct sighand_struct *sighand;
+
+				
 
 
 
