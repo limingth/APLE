@@ -353,7 +353,7 @@ chmod u+s <filename>
 chmod u+g <filename>
 
 ## day3 (4.26 - 4hours) Pro 4 api
-### Project - mytee
+### Project 1 - mytee
 mytee
 
 mytee log.c 
@@ -515,7 +515,7 @@ fi[0]-[3]
 * void release_inode()
 
 ## day5 (4.29 - 10hours) Ext2 Project
-### Project 1: ls 和 cat 命令实现
+### Project 2.1: ls 和 cat 命令实现
 * 对于任意 fs （dd创建的大小，inode数量，data block 的起始位置都从 fs 中自动获取）
 * 能够实现对于根目录下的 ls 和 cat 命令 （ls, cat test.txt）
 * 争取实现2级目录结构下的 ls 和 cat 命令 （ls aabb, cat aabb/test.txt）
@@ -555,7 +555,7 @@ API function name Refer to
 	p = get_inode(namei("test.txt"));
 	putns(get_block(p->block[0]), p->size);
 
-### Project 2: open/read/write/close 系统调用实现
+### Project 2.2: open/read/write/close 系统调用实现
 * 在正确理解 ext2 文件系统组织结构的前提下，自己设计并实现一个类 ext2 文件系统
 * 对次要的数据结构做大量简化，保留长度，不定长的可以实现为定长
 * 要求实现对于一个文件的 open, read, write, close 这4个函数接口。
@@ -596,7 +596,10 @@ fd_array[3] -> ("log.c")  |
 
 	struct task_struct {
 		pid_t pid;	
+		
 		struct mm_struct *mm,
+
+		/* open file information */
 		struct files_struct *files;
 
 		/* signal handlers */
@@ -604,6 +607,201 @@ fd_array[3] -> ("log.c")  |
 		struct sighand_struct *sighand;
 
 				
+### 3.2.1 exit 和 _exit
+* exit 库函数，需要包含 stdlib.h
+
+* _exit 系统调用，需要包含 unistd.h
+
+* 如果程序出错，不影响在 shell 下面的执行，但会影响 makefile 中执行。
+	- 解决办法是在 makefile 运行的命令前面加上 - ，表示忽略
+
+### 3.2.2 环境变量
+* extern char **environ;
+* int main(int argc, char *argv[], char *env[]);
+* char *getenv(char *name);
+
+
+### 3.3.1 fork 函数
+* 一次运行，返回两次
+* 父进程返回子进程id，子进程返回0
+* 父子进程的数据段，代码段是完全一样的，但分别属于不同的虚拟地址空间
+* 父子进程的 file 结构体在内核中，是共享的。
+
+### 3.3.2 exec 函数
+* execlp
+	- l: "ifconfig", ”eth0", "192.168.0.100"
+	- p: search in $PATH
+* execve
+	- v: "/sbin/ifconfig", argv[],
+	- e: env[]
+
+### Project 3: read/write process
+父进程创建子进程，子进程负责接受用户输入，写入log文件。父进程负责读log文件，打印输入信息。
+
+
+### 3.3.3 wait & waitpid 函数
+* zombie 僵尸进程
+	- Z+ 表示在前台
+	- Z  表示在后台
+	- R+ 表示正常运行在前台
+	- R  表示正常运行在后台
+
+* wait()
+
+* wait(&status)
+	- son "how to end"
+	- exit(0)	status = 0x0000
+	- exit(100)	status = 0x6400
+	- exit(0x89)	status = 0x8900
+	
+	- kill son	status = 0x0f
+	- seg fault	status = 0x8b
+
+	/usr/include/i386-linux-gnu/bits/waitstatus.h:32:
+	#define	__WTERMSIG(status)	((status) & 0x7f)
+
+	 28 /* If WIFEXITED(STATUS), the low-order 8 bits of the status.  */
+	 29 #define __WEXITSTATUS(status)   (((status) & 0xff00) >> 8)
+	 30 
+	 31 /* If WIFSIGNALED(STATUS), the terminating signal.  */
+	 32 #define __WTERMSIG(status)      ((status) & 0x7f)
+	 33 
+	 34 /* If WIFSTOPPED(STATUS), the signal that stopped the child.  */
+	 35 #define __WSTOPSIG(status)      __WEXITSTATUS(status)
+	 36 
+	 37 /* Nonzero if STATUS indicates normal termination.  */
+	 38 #define __WIFEXITED(status)     (__WTERMSIG(status) == 0)
+	 39 
+	 40 /* Nonzero if STATUS indicates termination by a signal.  */
+	 41 #define __WIFSIGNALED(status) \
+	 42   (((signed char) (((status) & 0x7f) + 1) >> 1) > 0)
+	 
+	 8b = 1000 1011
+	 7f = 0111 1111
+                 0 1011 = 0b + 1 = 0C >> 1 = 0110 > 0
+
+
+	$ kill -n 11 19185
+	$ 
+	$ ./a.out 
+	son running...
+	status = 0x8b
+	father running...
+	$ 
+
+
+### pipe 管道
+* 没人写，直接读，则读会阻塞
+* 写关闭，然后读，则直接返回0
+* 先写入，然后读，则读完全部数据之后继续阻塞
+* 先写入，然后关闭写，则读完全部数据之后还会返回0
+
+* 没人读，直接写，则写没问题。
+* 读关闭，然后写，则write函数出错不返回，程序退出，错误码141
+* 先读取，然后写，则读一开始就阻塞，没可能往里写
+* 先读取，然后关闭读，则读一开始就阻塞，没可能关闭读
+
+* 如果只写，不读，则写满64K之后，写进程会阻塞。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Project 4: 剪刀-石头-布 游戏
+* 无名管道 pipe
+	- 父进程创建1个子进程
+	- 父进程 和 子进程 随机产生一个手势，可以是剪刀，石头，布 中间的任意一个
+	- 比赛3次，三局两胜，打印出谁是最后胜利者。
+
+* 如何设计
+	- 父 -> 儿   ，儿子负责打印
+	- 父进程要关闭读
+	- 子进程要关闭写
+	- 父把数据传给儿子，儿子拿到直接判别，打印当局结果
+	- 父亲每传送一次，sleep(1)
+	- 儿子判别输赢后，打印，结束时运行 kill 命令，通过 getppid() 获得父亲的pid号。
+
+	- srand(time(NULL));
+	- 0，1，2 = rand() % 3		剪刀0，石头1，布2
+
+
+	- int cmp(a, b)
+	  {
+		if (a == b)
+                	return 0;
+		
+		if ()
+			return 1;
+
+		return -1;
+
+	  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* 有名管道 fifo
+	- 两个应用程序 a1 和 a2
+	- 随机产生1个手势，然后PK
+	- 程序根据3局2胜，打印出各自输赢的结果。
+
+
+
+
+
+
+
+
 
 
 

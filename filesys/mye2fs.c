@@ -275,8 +275,10 @@ int main(int argc, char *argv[])
 	int counter = 0;
 	int gb;		// group block number
 
-	if (argc >= 2)
-		filename = argv[1];
+//	if (argc >= 2)
+//		filename = argv[1];
+	fd = open(argv[1], O_RDONLY);
+	dup2(fd, 0);
 
 	fd = open(filename, O_RDWR);
 	if (fd < 0)
@@ -325,6 +327,7 @@ int main(int argc, char *argv[])
 		printf("MyExt2 # ");
 		//scanf("%s %s", cmd, arg);
 		fgets(buf, 64, stdin);
+		printf("%s", buf);
 		ret = sscanf(buf, "%s %s", cmd, arg);
 
 		if (ret == 0)
