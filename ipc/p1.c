@@ -49,20 +49,15 @@ int main(void)
 	int fi;
 	int my;
 
-//	srand(time(NULL));
-	srand(100);
+	srand(time(NULL));
 	while (1)
 	{
-		scanf("%d", &fi);
-		fprintf(stderr, "get %d\n", fi);
-		fflush(stderr);
-
 		my = get_rand();
-		fprintf(stdout, "%d\n", my);
+		// must output with a newline and then fflush stdout
+		printf("%d\n", my);
 		fflush(stdout);
 
-		fprintf(stderr, "rand: %d\n", my);
-		fflush(stderr);
+		scanf("%d", &fi);
 
 		// if return 1, then sb wins
 		if (judge(fi, my))

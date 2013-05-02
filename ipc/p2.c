@@ -46,24 +46,21 @@ int judge(int father, int child)
 
 int main(void)
 {
-	int fi = 0;
-	int my = 0;
+	int fi;
+	int my;
 
-	srand(time(NULL));
+//	srand(time(NULL));
+	srand(100);
 	while (1)
 	{
 		my = get_rand();
-		fprintf(stderr, "%d\n", my);
-		fflush(stderr);
+		// must output with a newline and then fflush stdout
 		printf("%d\n", my);
 		fflush(stdout);
 
 		scanf("%d", &fi);
-		fprintf(stderr, "2 get %d\n", fi);
-		fflush(stderr);
 
 		// if return 1, then sb wins
-		//if (judge(fi, my))
 		if (judge(my, fi))
 			exit(0);
 	}
