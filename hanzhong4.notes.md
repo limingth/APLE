@@ -690,6 +690,8 @@ fd_array[3] -> ("log.c")  |
 	$ 
 
 
+## day7 (5.1 - 7hours) IPC
+
 ### pipe 管道
 * 没人写，直接读，则读会阻塞
 * 写关闭，然后读，则直接返回0
@@ -740,18 +742,152 @@ fd_array[3] -> ("log.c")  |
 	- 随机产生1个手势，然后PK
 	- 程序根据3局2胜，打印出各自输赢的结果。
 
+## day8 (5.2 - 4hours) Thread
+
+### pthread_create
+
+* pthread_t 
+	$ grep -rn "pthread_t" /usr/include/  | grep typedef
+	/usr/include/thread_db.h:243:typedef pthread_t thread_t;
+	/usr/include/i386-linux-gnu/bits/pthreadtypes.h:36:typedef unsigned long int pthread_t;
+	$ 
+
+* start_routine
+	void *(*start_routine) (void *)
+
+* about pthread diff
+
+	pthid 2 = b75d7b40
+	pthid 2 = b6dd6b40
+	pthid 2 = b65d5b40
+	pthid 2 = b5dd4b40
+
+* diff
+	- pthid (高地址) -> &arg (线程参数在栈空间) -> &tmp (线程内的局部变量最后分配，在栈顶)
+	- pthid1 (低地址) - pthid2 (高地址) = b5dd4b40 - b65d5b40
+	- 先创建的线程在低地址，后创建的在高地址，可以认为是 malloc 出来的地址，不是在栈上的地址
+	- b65d5b40 - b5dd4b40 = 0x801000  就是创建一个线程所需要的空间 8M
+
+	arg is my test thread
+	pthid is  b5dd4b40
+	&arg is 0xb5dd4370
+	&tmp is 0xb5dd435c
+	&global is 0x804a020
+
+	arg is my test thread
+	pthid is  b65d5b40
+	&arg is 0xb65d5370
+	&tmp is 0xb65d535c
+	&global is 0x804a020
+
+	arg is my test thread
+	pthid is  b6dd6b40
+	&arg is 0xb6dd6370
+	&tmp is 0xb6dd635c
+	&global is 0x804a020
+
+	arg is my test thread
+	pthid is  b75d7b40
+	&arg is 0xb75d7370
+	&tmp is 0xb75d735c
+	&global is 0x804a020
+
+
+### Project 5: 倒计时
+请通过创建线程的方法，实现一个倒计时5秒的提示。
+如果用户在5秒之内按了回车键，则中止倒计时，打印输出 Welcome to shell 进入 Shell 模式。
+如果用户一直没有按回车键，则倒计时结束后，打印输出 Booting Linux kernel ... 
+
+* 设计思路
+	- 主程序创建线程T，T接受用户输入。
+	- 主程序打印5秒倒计时，打印过程中判别 flag 变量是否 == 1，1表示已经有了用户输入，
+	- 如有则跳出循环，如没有则继续倒计时，直到5秒用尽，打印 Booting
+	- 线程T 读取标准输入，如有用户输入，则设置标志位 flag 变量为1，如无则设为0
+	- 在上题中，用户必须按回车键才能打断倒计时，想一想，怎样能够实现用户按下任意键就可以进入shell模式？
+
+## day9 (5.3 - 4hours) ITS: Inter-Thread Synchronization
+
+### Project 6: 打印1秒钟能够输出的最多的数字个数。
+使用 printf("%d\n", counter++); 
+
+* 设计思路1	37652
+	- 主程序创建线程T，线程T 进行 sleep 1秒，定义1个flag，完了设为1.
+	- 主程序负责打印，判断flag是否为1，为1则跳出循环。
+
+* 设计思路2	37872
+	- 主程序创建线程T，主程序中 sleep 1秒。直接结束。
+	- 线程T负责不断打印。其他什么也不管。
+
+* 设计思路3	28354
+	- 主程序创建线程T，线程T sleep 1秒。直接结束。
+	- 主程序负责不断打印。其他什么也不管。
+
+### Mutex 
+#### static 静态初始化
+	pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_lock(&mylock);
+	pthread_mutex_unlock(&mylock);
+
+#### dynamic 动态初始化
+        pthread_mutex_t tmp;
+	plock = &tmp;
+        //plock = malloc(sizeof(pthread_mutex_t));
+        pthread_mutex_init(plock, NULL);
+
+	pthread_mutex_lock(plock);
+	pthread_mutex_unlock(plock);
+
+#### pthread_mutex_t 
+	$ grep -rn "pthread_mutex_t" /usr/include/  | grep }
+	/usr/include/i386-linux-gnu/bits/pthreadtypes.h:73:} pthread_mutex_t;
+	$ vi /usr/include/i386-linux-gnu/bits/pthreadtypes.h +73
+
+### Project 7: 采用线程同步机制解决剪刀石头布的问题
+
+## day10 (5.4 - 7hours) Signal
+标准输出缓冲区的大小是 1024 个字节。只有用 \n 强制输出缓冲区，或者用 fflush(stdout) 输出缓冲，否则只有积累到1024个字节才会输出一次。
+
+如何实现大小写的转换，最简单的方法是 （不能用 if 来实现） 用位操作来实现
+ 0x41 'a' -> 0x61 'A'
+         ^0x20
+ 0x61 'A' -> 0x41 'a'
+
+	异或操作的作用
+	1) 大小写转换
+	2) 两数交换 SWAP(a, b) 	a = a ^ b; b = a ^ b; a = a ^ b;
+	3) 求一个数二进制表示中 bit 1 的个数。  while (n = n ^ (n - 1))
+
+
+* SIGINT 信号 （interrupt）
+	- ctrl + c 产生
+	- 只有前台程序能接收 （前台，后台的概念）
+
+* 有用的几个命令
+	- kill -l
+	- man 7 signal
+	- kill -n x pid
+
+* 几种常见信号
+	- SIGINT 用户按下 Ctrl + c
+	- SIGSTP 用户按下 Ctrl + z
+	- SIGQUIT 用户按下 Ctrl + \
+	- SIGFPE 程序中有除0，产生浮点异常
+	- SIGSEGV 程序中有访问非法内存地址，产生段错误
+	- SIGTERM 程序用 kill 命令发送信号
+	- SIGALRM 程序设置定时闹钟到时后中止
+
+* 系统函数发出信号
+	- kill(pid_t pid, int signo);
+	- raise(int signo);
+	- about(void);
+	- alarm(unsigned int seconds);
 
 
 
 
 
-
-
-
-
-
-
-
+	
+	
 
 
 

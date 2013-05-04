@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <termios.h>
+
+int flag = 0;
+
+void * mythread(void * arg)
+{
+	struct termios oldSet,newSet;  
+	tcgetattr(fileno(stdin),&oldSet);  
+
+	newSet = oldSet;  
+	newSet.c_lflag &= ~ECHO;  
+	newSet.c_lflag &= ~ICANON;  
+	//VMIN等待最小的字符数  
+	newSet.c_cc[VMIN] = 1;    
+	//等待的最小时间  
+	newSet.c_cc[VTIME] = 0;  
+
+	if(tcsetattr(fileno(stdin), TCSAFLUSH, &newSet)!= 0 )  
+		fprintf( stderr,"Could not set attrbutes of terminal!\n" );  
+  
+	getchar();
+	flag = 1;
+
+	tcsetattr( fileno(stdin), TCSANOW, &oldSet );  
+}
+
+#include <termios.h>  
+
+int main(void)
+{
+	int i = 0;
+
+	pthread_t pthid;
+
+	pthread_create(&pthid, NULL, mythread, NULL);
+
+	for (i = 3; i > 0 && flag == 0; i--)
+	{
+		printf("%d\n", i);
+		sleep(1);
+	}
+
+	if (flag == 1)
+	{
+		char * env[] = { "PS1=myshell￥", NULL };
+
+		printf("Welcome to shell\n");
+		//system("sh");
+		execle("/bin/sh", "sh", NULL, env);
+		return 0;
+	}
+
+	printf("Booting Linux kernel ...\n");
+	system("dmesg | head");
+
+	return 0;
+}
