@@ -18,6 +18,17 @@
 	 2357  find . -name "*.c" -exec cat {} \; | wc -l
 	 2357  find . -name "*.c" -exec cat {} >> log.c \; 
 
+### about git
+	$ git clone https://github.com/limingth/APLE.git
+	$ cd APLE
+	$ ls 
+	$ gedit hanzhong4.notes.md
+	$ git pull
+
+	$ git status
+	$ git commit -a -m "M notes.md"
+	$ git push
+	
 ### Team A B C
 
 A1 :-> A3 -> A5
