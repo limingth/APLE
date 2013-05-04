@@ -26,9 +26,12 @@
 	$ git pull
 
 	$ git status
+	$ git add .
 	$ git commit -a -m "M notes.md"
 	$ git push
 	
+	$ git pull
+
 ### Team A B C
 
 A1 :-> A3 -> A5
@@ -892,6 +895,38 @@ fd_array[3] -> ("log.c")  |
 	- raise(int signo);
 	- about(void);
 	- alarm(unsigned int seconds);
+
+
+### 6.3 阻塞信号
+* 信号的基本概念
+	- 产生 Generation
+	- 递达 Delivery
+	- 未决 Pending
+	- 阻塞 Block
+	- 忽略 Ignore
+
+* 生活案例
+	- 点菜模型
+	- 入党申请模型
+	- 送奶模型
+	- 打电话模型
+	- 中断模型
+
+#### sigset_t 
+	$ grep -rn "sigset_t" /usr/include/ | grep typedef
+	/usr/include/i386-linux-gnu/asm/signal.h:15:typedef unsigned long sigset_t;
+
+#### mysleep
+* version 1
+	- alarm(1);
+	- pause();
+* version 2
+	- newact, oldact
+	- restore oldact
+* version 3
+	- newact.sa_flags = 0 -> segmentation fault
+* version 4
+	- sigsuspend()
 
 
 
