@@ -925,9 +925,41 @@ fd_array[3] -> ("log.c")  |
 	- restore oldact
 * version 3
 	- newact.sa_flags = 0 -> segmentation fault
+* version 4
+	- sigsuspend()
+
+### Project 8: 采用信号机制解决剪刀石头布的问题
+* 讨论问题
+	- 谁来负责发信号，谁来负责接收信号
+	- 如何用信号来传递信息（0，1，2分别代表剪刀石头布）
+	- 谁来负责注册相关 sa_handler
+	- 如何实现父子进程的同步，以避免父亲出3次，儿子出1次的情况
+	- 谁负责判别胜负，并打印出结果
+
+* 设计思路1
+	- 儿子发送信号kill(getppid(), xxx)，父亲接收3个handler
+	- signo: SIGTERM（15）-0  SIGUSR1（10）-1   SIGUSR2（12）-2
+	- 父亲负责注册handler
+	- 父亲用 pause() ，儿子发完一个后也要pause(),等待父亲说下一个。
+	  父亲也只能通过 kill(SIGTERM, xxx) 通知儿子继续产生下一个
+	- 父亲负责判别胜负，打印结果。
+
+* 设计思路2
+	- 父子之间必须实现互相发信号，信号代表的含义按如下约定
+	- signo: SIGTERM（15）-0  SIGUSR1（10）-1   SIGUSR2（12）-2
+	- 父子都需要注册3个handler
+	- 在 fork 出子进程之前完成注册，则父子都具备接收3个信号的功能。
+	- 父子之间的代码应该是类似的。
+		1. 产生1个随机数字. rand() % 3
+		2. 发送给对方的进程id. getppid(), pid就是fork的返回值	
+		2.1 切换进程调度。
+		3. pause() 等待对方发来的信号，根据信号类别得到对方产生的随机数字
+		4. 调用 judge 函数进行判断。
+		5. 如果 judge() 返回结果为真,则结束自己。 exit(0)
+		6. 跳转到1，继续下一次。
 
 
-
+## day11 (5.5 - 7hours) Job Control
 
 
 	
