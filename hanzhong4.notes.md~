@@ -950,6 +950,12 @@ fd_array[3] -> ("log.c")  |
 	- 父子都需要注册3个handler
 	- 在 fork 出子进程之前完成注册，则父子都具备接收3个信号的功能。
 	- 父子之间的代码应该是类似的。
+
+		1. 父亲发信号给儿子，儿子先 pause()
+		2. 儿子收到信号后，产生数字，再发送给父亲
+		3. 父亲发完之后 pause 等儿子，收到儿子信号后，再judge
+		4. 儿子发给父亲之后，调 judge 判断
+
 		1. 产生1个随机数字. rand() % 3
 		2. 发送给对方的进程id. getppid(), pid就是fork的返回值	
 		2.1 切换进程调度。
@@ -960,10 +966,85 @@ fd_array[3] -> ("log.c")  |
 
 
 ## day11 (5.5 - 7hours) Job Control
+### Terminal
+* /dev/tty
+* ttyname(fd)
+* $ tty
+* /dev/ttyS0 串口
+	- minicom
+
+### Login
+* init 进程
+	- /etc/inittab 配置文件
+	- /sbin/getty 9600 tty1
+* getty 命令
+	- 打开终端设备 /dev/tty
+	- 把 fd = 0，1，2 指向 /dev/tty 设备
+	- 启动 login 程序
+* login
+	- 提示输入用户和密码
+	- 如正确，则设置主目录，然后执行 bash
+* 伪终端（通过网络登录或者图形窗口）
+	- 不受tty 6个数量限制
+	- /dev/pts/0
+* xinetd/inetd
+
+### Job Control
+* 前台和后台
+* ps -o pid,ppid,comm,pgrp,session,tpgid
+* cat & 放到后台执行
+* jobs 查看后台程序
+* fg 放到前台执行
+* bg 把已经停止的后台程序继续执行
+* ctrl+z 停止当前在前台运行的程序，放入后台 stopped
+* stty tostop 设置终端属性，禁止后台进程打印到标准输出
+
+### Daemon
+* 4. 关闭文件描述符 0，1，2，使之重定向到 /dev/null 
+* 3. 设置主目录为 根目录。 chdir("/")
+* 2. setsid() 创建一个新的 Session，使得当前进程成为 session leader
+* 1. fork() 出子进程后，结束父进程，让子进程调用 setsid();
+
+* $ ps xj | head -n 1 && ps xj | grep "./a.out"
+ PPID   PID  PGID   SID TTY      TPGID STAT   UID   TIME COMMAND
+17939 18796 18796 17939 pts/10   18796 R+    1000   6:47 ./a.out
+18707 18938 18937 18707 pts/11   18937 S+    1000   0:00 grep --color=auto ./a.out
+
+成功后输出为 
+    1 19016 19015 17939 ?           -1 R     1000   1:17 ./daemon
 
 
-	
-	
+### Homework1
+基于Ext2文件系统的 Shell 大作业，之前实现了 ls 和 cat 命令
+  1. 支持 Ext2 文件系统的 inode 和 data block 的操作
+     ls, cat, cp, stat, mkdir, rmdir,  支持多级目录
+  2. 支持 ELF 可执行程序的加载和执行
+	把存在于你的文件系统内部的 a.out 读出，拷贝到外部文件系统 临时文件
+	然后才能调用 fork 和 exec 来执行 a.out
+  3. 如果是 ELF 的可执行文件，请通过分析 ELF header, section header table, string table, symbal table, 
+	实现如下几个命令的功能，可以取同样的名字
+	readelf -a a.out
+	nm a.out
+	objcopy -O binary -j .text / -j .data a.out text.bin/data.bin
+
+### Homework2
+基于进程间通信来实现五子棋对战的游戏，棋盘大小为 15*15, 1和2代表选手名称。
+要求实现3个版本：
+  1. 人人对战，实现位置不重复，不出界，而且能判别输赢。
+  2. 人机对战，要求实现一个机器算法，能够下过你本人。
+  3. 机机对战，要求在同一个机器上，启动2个程序a.out, 
+	3.1 通过进程间通信有名管道来实现人和人的对战。
+	3.2 通过进程间通信有名管道来实现算法和算法的对战。
+
+### Homework3
+搜索引擎大作业，给定一个网页地址，通过 wget 或者 curl 命令获取这个网页的 html 代码。
+
+从网页html文件中抓取正文文本 (例如 "<p>hello, lumit.</p>" )，搜索是否存在用户输入的关键字 lumit，并返回相关段落正文。
+同时从网页文件中抓取超链接URL (例如 <a href="http://www.lumit.org">lumit - let us make it together.</a> )，并下载相关网页文件。依此递归。
+
+引入线程的机制，每发现一个超链接，启动1个线程进行搜索。最后返回所有匹配到的页面正文，把结果输出到文件。加强版： 实现一个作业库，支持断点续抓。
+
+
 
 
 
