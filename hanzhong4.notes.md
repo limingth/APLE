@@ -605,7 +605,7 @@ fd_array[3] -> ("log.c")  |
 
 4 fd = dup2(1, 4);
 
-## day6 (4.30 - 10hours) Process
+## day6 (4.30 - 7hours) Process
 ### 3.1 进程控制块
 
 	struct task_struct {
