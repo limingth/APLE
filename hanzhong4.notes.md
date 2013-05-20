@@ -1,4 +1,4 @@
-# hanzhong Term 4 class notes
+﻿# hanzhong Term 4 class notes
 
 ## day1 (4.24 - 4hours) File IO
 	 2275  git
@@ -760,23 +760,23 @@ fd_array[3] -> ("log.c")  |
 
 ### pthread_create
 
-* pthread_t 
+#### pthread_t 
 	$ grep -rn "pthread_t" /usr/include/  | grep typedef
 	/usr/include/thread_db.h:243:typedef pthread_t thread_t;
 	/usr/include/i386-linux-gnu/bits/pthreadtypes.h:36:typedef unsigned long int pthread_t;
 	$ 
 
-* start_routine
+#### start_routine
 	void *(*start_routine) (void *)
 
-* about pthread diff
+#### about pthread diff
 
 	pthid 2 = b75d7b40
 	pthid 2 = b6dd6b40
 	pthid 2 = b65d5b40
 	pthid 2 = b5dd4b40
 
-* diff
+#### diff
 	- pthid (高地址) -> &arg (线程参数在栈空间) -> &tmp (线程内的局部变量最后分配，在栈顶)
 	- pthid1 (低地址) - pthid2 (高地址) = b5dd4b40 - b65d5b40
 	- 先创建的线程在低地址，后创建的在高地址，可以认为是 malloc 出来的地址，不是在栈上的地址
@@ -806,6 +806,23 @@ fd_array[3] -> ("log.c")  |
 	&tmp is 0xb75d735c
 	&global is 0x804a020
 
+参考资料： 
+
+1. 为何两次创建线程的栈空间大小是 8M + 4K ？
+<http://blog.csdn.net/romanbrickie/article/details/8535342>
+
+2. 如何修改 8M 的线程栈空间大小？
+<http://updatedb.blog.hexun.com/7246358_d.html>
+<http://blog.csdn.net/horstlinux/article/details/7666032>
+
+3. tgid字段,pid字段含义
+<http://blog.chinaunix.net/uid-26849197-id-3201487.html>
+
+4. linux 线程实现机制分析
+<http://linux.chinaunix.net/techdoc/net/2008/09/03/1029714.shtml>
+
+5. Linux内核线程之深入浅出  
+<http://blog.163.com/jiams_wang/blog/static/303391492012103010374038/>
 
 ### Project 5: 倒计时
 请通过创建线程的方法，实现一个倒计时5秒的提示。
