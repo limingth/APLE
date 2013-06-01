@@ -1,0 +1,3 @@
+#! /bin/mkdir
+cd ..
+ls
